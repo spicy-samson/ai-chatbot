@@ -8,10 +8,12 @@ const app = new Hono();
 app.use("*", cors());
 
 const token = process.env["GITHUB_TOKEN"];
+const openai_apikey= process.env.VITE_OPENAI_API_KEY
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1-mini";
 const systemPrompt = process.env.VITE_SYSTEM_PROMPT;
-
+console.log(openai_apikey);
+console.log(systemPrompt)
 app.post("/api/chat", async (c) => {
   try {
     const { messages } = await c.req.json(); // Correct way to get JSON body in Hono
