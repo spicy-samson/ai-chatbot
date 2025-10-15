@@ -1,19 +1,48 @@
 <template>
-  <div class="chat-container">
-    <div class="chat-window">
-      <div v-for="(msg, idx) in messages" :key="idx" :class="['chat-message', msg.role]">
-        <strong>{{ msg.role === 'user' ? 'You' : 'AI' }}:</strong> {{ msg.content }}
+  <div class="flex flex-col h-screen bg-gray-100 font-gilroy md:flex-row">
+    <!-- Sidebar / Topbar -->
+    <aside class="w-full bg-gray-900 text-white flex items-center justify-between px-4 py-3 md:w-64 md:flex-col md:items-start md:justify-start md:p-6">
+      <h2 class="text-lg font-bold md:mb-6 md:text-2xl">AI Chatbot</h2>
+      <div class="opacity-50 md:flex-1 md:flex md:items-center md:justify-center">Sidebar</div>
+    </aside>
+    <!-- Chat Section -->
+    <div class="flex-1 flex flex-col relative bg-white">
+      <div class="flex-1 overflow-y-auto px-2 py-4 pb-28 md:px-6 md:py-8 md:pb-32">
+        <div
+          v-for="(msg, idx) in messages"
+          :key="idx"
+          :class="[
+            'mb-3 p-3 rounded-lg max-w-[90%] break-words text-sm',
+            msg.role === 'user'
+              ? 'bg-blue-100 self-end ml-auto'
+              : 'bg-gray-100 self-start mr-auto',
+            'md:mb-4 md:p-4 md:text-base md:max-w-[70%]'
+          ]"
+        >
+          <strong>{{ msg.role === 'user' ? 'You' : 'AI' }}:</strong> {{ msg.content }}
+        </div>
       </div>
+      <form
+        @submit.prevent="sendMessage"
+        class="fixed left-0 right-0 bottom-0 bg-gray-100 px-2 py-3 flex gap-2 shadow-[0_-2px_8px_rgba(0,0,0,0.04)] z-10 md:left-64 md:px-6 md:py-4 md:gap-3"
+      >
+        <input
+          v-model="input"
+          type="text"
+          placeholder="Type your message..."
+          autocomplete="off"
+          :disabled="loading"
+          class="flex-1 p-2 rounded-md border border-gray-300 text-sm outline-none disabled:bg-gray-200 md:p-3 md:text-base"
+        />
+        <button
+          type="submit"
+          :disabled="loading || !input.trim()"
+          class="px-4 rounded-md border-none bg-emerald-600 text-white font-semibold text-sm transition-colors duration-200 hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed md:px-6 md:text-base"
+        >
+          Send
+        </button>
+      </form>
     </div>
-    <form @submit.prevent="sendMessage" class="chat-input">
-      <input
-        v-model="input"
-        type="text"
-        placeholder="Type your message..."
-        autocomplete="off"
-      />
-      <button type="submit">Send</button>
-    </form>
   </div>
 </template>
 
@@ -34,7 +63,6 @@ export default {
       this.input = "";
       this.loading = true;
 
-      // Call your backend API (adjust the endpoint as needed)
       try {
         const res = await fetch("http://localhost:3000/api/chat", {
           method: "POST",
@@ -51,68 +79,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.chat-container {
-  max-width: 700px;
-  margin: 60px auto;
-  border: 1.5px solid #eee;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 4px 16px #0002;
-  display: flex;
-  flex-direction: column;
-  height: 800px;
-  font-size: 1.25rem;
-  color: #111;
-}
-.chat-window {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px;
-}
-.chat-message {
-  margin-bottom: 18px;
-  padding: 14px 18px;
-  border-radius: 8px;
-  max-width: 85%;
-  word-break: break-word;
-  color: #111;
-  font-size: 1.15em;
-}
-.chat-message.user {
-  background: #e0e7ff;
-  align-self: flex-end;
-}
-.chat-message.assistant {
-  background: #f3f4f6;
-  align-self: flex-start;
-}
-.chat-input {
-  display: flex;
-  border-top: 1.5px solid #eee;
-  padding: 20px;
-}
-.chat-input input {
-  flex: 1;
-  padding: 14px;
-  border-radius: 6px;
-  border: 1.5px solid #ccc;
-  margin-right: 12px;
-  font-size: 1.1em;
-  color: #e6e0e0;
-}
-.chat-input button {
-  padding: 14px 28px;
-  border-radius: 6px;
-  border: none;
-  background: #646cff;
-  color: #fff;
-  cursor: pointer;
-  font-size: 1.1em;
-}
-.chat-input button:disabled {
-  background: #aaa;
-  cursor: not-allowed;
-}
-</style>

@@ -7,17 +7,27 @@ dotenv.config();
 const app = new Hono();
 app.use("*", cors());
 
-const token = process.env["GITHUB_TOKEN"];
-const openai_apikey= process.env.VITE_OPENAI_API_KEY
+const githubToken = process.env.VITE_GITHUB_TOKEN;
+const openaiApiKey = process.env.VITE_OPENAI_API_KEY;
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1-mini";
 const systemPrompt = process.env.VITE_SYSTEM_PROMPT;
-console.log(openai_apikey);
+console.log(githubToken)
+console.log('--------------')
+console.log(openaiApiKey);
+console.log('--------------')
 console.log(systemPrompt)
+console.log('--------------')
+
 app.post("/api/chat", async (c) => {
   try {
     const { messages } = await c.req.json(); // Correct way to get JSON body in Hono
-    const client = new OpenAI({ baseURL: endpoint, apiKey: token });
+    
+    // Use GitHub Models if token exists, otherwise fallback to OpenAI
+    const client = new OpenAI({
+      baseURL: githubToken ? endpoint : undefined,
+      apiKey: githubToken || openaiApiKey,
+    });
 
     // Always prepend the system prompt from .env
     const chatMessages = [
@@ -42,12 +52,12 @@ app.post("/api/chat", async (c) => {
     //   model: model,
     // });
 
-    console.log(response.choices[0].message.content);
-
-    return c.json({ reply: response.choices[0].message.content });
+    const reply = response.choices[0]?.message?.content ?? "No reply received.";
+    console.log("AI reply:", reply);
+    return c.json({ reply });
   } catch (err) {
-    console.error(err);
-    return c.json({ reply: "Error: Could not get response." });
+    console.error("Error during chat request:", err);
+    return c.json({ reply: "Error: Could not get response." }, 500);
   }
 });
 
