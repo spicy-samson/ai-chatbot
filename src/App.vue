@@ -1,13 +1,95 @@
 <template>
   <div class="flex flex-col h-screen bg-gray-100 font-gilroy md:flex-row">
-    <!-- Sidebar / Topbar -->
-    <aside class="w-full bg-gray-900 text-white flex items-center justify-between px-4 py-3 md:w-64 md:flex-col md:items-start md:justify-start md:p-6">
-      <h2 class="text-lg font-bold md:mb-6 md:text-2xl">AI Chatbot</h2>
-      <div class="opacity-50 md:flex-1 md:flex md:items-center md:justify-center">Sidebar</div>
+    <!-- Hamburger Button (Mobile Only) -->
+    <button
+      class="absolute top-4 left-4 z-40 md:hidden bg-gray-900 text-white p-2 rounded"
+      @click="showSidebar = true"
+      aria-label="Open sidebar"
+    >
+      <svg
+        class="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M4 6h16M4 12h16M4 18h16"
+        />
+      </svg>
+    </button>
+
+    <!-- Sidebar -->
+    <aside
+      :class="[
+        'bg-gray-900 text-white flex flex-col md:w-64 md:h-full md:justify-between md:p-6 transition-transform duration-200 z-30',
+        showSidebar
+          ? 'fixed inset-0 w-64 p-6'
+          : 'fixed -translate-x-full w-64 p-6',
+        'md:static md:translate-x-0 md:w-64 md:p-6',
+      ]"
+      @click.self="showSidebar = false"
+    >
+      <div>
+        <div class="flex items-center justify-between mb-4 md:mb-6">
+          <h2 class="text-lg font-bold md:text-2xl">AI Chatbot</h2>
+          <!-- Close button (Mobile Only) -->
+          <button
+            class="md:hidden text-white"
+            @click="showSidebar = false"
+            aria-label="Close sidebar"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold mb-2 opacity-70">Recent Chats</h3>
+          <ul>
+            <li
+              v-for="chat in dummyChats"
+              :key="chat.id"
+              class="mb-2 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer transition"
+            >
+              <span class="truncate block">{{ chat.title }}</span>
+              <span class="text-xs opacity-60">{{ chat.time }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <button
+        class="w-full mt-4 py-2 rounded bg-red-600 hover:bg-red-700 transition text-white font-bold"
+        @click="logout"
+      >
+        Log out
+      </button>
     </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div
+      v-if="showSidebar"
+      class="fixed inset-0 bg-black bg-opacity-40 z-20 md:hidden"
+      @click="showSidebar = false"
+    ></div>
+
     <!-- Chat Section -->
     <div class="flex-1 flex flex-col relative bg-white">
-      <div class="flex-1 overflow-y-auto px-2 py-4 pb-28 md:px-6 md:py-8 md:pb-32">
+      <div
+        class="flex-1 overflow-y-auto px-2 py-4 pb-28 md:px-6 md:py-8 md:pb-32"
+      >
         <div
           v-for="(msg, idx) in messages"
           :key="idx"
@@ -16,10 +98,11 @@
             msg.role === 'user'
               ? 'bg-blue-100 self-end ml-auto'
               : 'bg-gray-100 self-start mr-auto',
-            'md:mb-4 md:p-4 md:text-base md:max-w-[70%]'
+            'md:mb-4 md:p-4 md:text-base md:max-w-[70%]',
           ]"
         >
-          <strong>{{ msg.role === 'user' ? 'You' : 'AI' }}:</strong> {{ msg.content }}
+          <strong>{{ msg.role === "user" ? "You" : "AI" }}:</strong>
+          {{ msg.content }}
         </div>
       </div>
       <form
@@ -53,6 +136,14 @@ export default {
       input: "",
       messages: [],
       loading: false,
+      showSidebar: false,
+      dummyChats: [
+        { id: 1, title: "Project Standup", time: "10:30 AM" },
+        { id: 2, title: "Weekend Tasks", time: "Yesterday" },
+        { id: 3, title: "Stripe Integration", time: "2 days ago" },
+        { id: 4, title: "Cloudflare Workers Q&A", time: "3 days ago" },
+        { id: 5, title: "General Discussion", time: "Last week" },
+      ],
     };
   },
   methods: {
@@ -72,9 +163,16 @@ export default {
         const data = await res.json();
         this.messages.push({ role: "assistant", content: data.reply });
       } catch (e) {
-        this.messages.push({ role: "assistant", content: "Error: Could not get response." });
+        this.messages.push({
+          role: "assistant",
+          content: "Error: Could not get response.",
+        });
       }
       this.loading = false;
+    },
+    logout() {
+      // Dummy logout action
+      alert("Logged out!");
     },
   },
 };
